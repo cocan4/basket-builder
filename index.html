@@ -119,3 +119,369 @@
           <button class="btn" id="btn-restore-seed">שחזר מאגר</button>
         </div>
         <div class="hr"></div>
+        <div class="small muted" id="sum-bank"></div>
+      </div>
+
+      <div class="card" id="bank-card">
+        <h3 style="margin:0 0 10px">מאגר תרגילים</h3>
+        <div id="bank" class="list" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- בניית המערך -->
+    <div class="col">
+      <div class="card">
+        <div class="row wrap">
+          <input id="plan-title" class="grow" placeholder="שם המערך (למשל: קטסל ב׳ – יסודות כדרור)"/>
+          <input id="plan-date" type="date"/>
+          <input id="plan-group" placeholder="קבוצה/שכבת גיל"/>
+        </div>
+        <div class="hr"></div>
+        <div class="row">
+          <span id="sum-count" class="pill">0 תרגילים</span>
+          <span id="sum-time" class="pill">0 דק׳ סה\"כ</span>
+        </div>
+        <div id="plan" class="plan" aria-live="polite"></div>
+        <div class="hr"></div>
+        <textarea id="plan-notes" rows="4" placeholder="הערות למאמן: דגשים, חלוקה לתחנות, וריאציות…"></textarea>
+        <div class="row" style="justify-content:space-between;margin-top:8px">
+          <div class="small muted">טיפ: שימוש בכפתורי ↑↓ להזזה; להפקת PDF – הדפסה של הדפדפן.</div>
+          <div class="toolbar">
+            <button class="btn good" id="btn-save-plan">שמירת מערך בדפדפן</button>
+            <button class="btn bad" id="btn-reset-plan">ניקוי מערך</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  'use strict';
+
+  // ===== נתוני ברירת מחדל =====
+  const seed = [
+    {id:"D1", title:"חימום דינמי – קווים", category:"חימום", age:"קטסל", duration:10,
+     equipment:"קונוס לכל שחקן", goals:["עלייה דופק","קואורדינציה"],
+     description:"ריצה קלה בין הקווים, סגירות-פתיחות, דילוגים, ברכיים גבוהות, עקבים לישבן.",
+     coaching:["טווח תנועה מלא","נשימה","שליטה בקו"]},
+    {id:"D2", title:"כדרור יד חזק/חלשה בתחנות", category:"כדרור", age:"קטסל", duration:12,
+     equipment:"כדור לכל שחקן, קונוסים", goals:["שליטה","שתי ידיים"],
+     description:"4 תחנות: ביד חזקה, ביד חלשה, שינויי כיוון, כדרור הגנה.",
+     coaching:["גובה כדרור","מבט למעלה","עצירה נשלטת"]},
+    {id:"D3", title:"מסירות בתנועה – זוגות", category:"מסירה", age:"ילדים", duration:10,
+     equipment:"כדור לכל זוג", goals:["תזמון","מסירה מדויקת"],
+     description:"זוגות רצים לרוחב ומוסרים תוך הצטרפות לקו התקפה.",
+     coaching:["כף יד מאחורי הכדור","צעד עצירה לפני מסירה"]},
+    {id:"D4", title:"סיום בליי-אפ מצד ימין/שמאל", category:"סיום", age:"ילדים", duration:15,
+     equipment:"כדור לכל שחקן", goals:["צעד וחצי","סיום מרוכז"],
+     description:"טורים לשני הצדדים, דגש על ספירה: כדרור – צעד – צעד – עליה.",
+     coaching:["פוקוס על קרש","שימוש ביד שמאל"]},
+
+    /* ===== התקפה אזורית ===== */
+    {id:"D8", title:"התקפת 2-3 – Hi-Low לפוסט", category:"התקפה אזורית", age:"ילדים", duration:12,
+     equipment:"", goals:["הזנת פוסט","Reversal"],
+     description:"שתי תחנות: (1) מסירה לצד חלש ו-Hi-Low בין פוסט גבוה לנמוך; (2) הטעיית עין + מסירת לוב.",
+     coaching:["סבלנות לפני הכנסה","זוויות מסירה","Sealing"]},
+    {id:"D9", title:"התקפת 2-3 – Short Corner", category:"התקפה אזורית", age:"ילדים", duration:12,
+     equipment:"", goals:["פיצול אזור","קליעה קצרה"],
+     description:"כניסה ל-Short Corner אחרי Reversal; קריאה: זריקה, מסירה לפוסט, או Skip.",
+     coaching:["קלות החלטה בשלוש אפשרויות","תפיסת כדור נמוכה"]},
+    {id:"D10", title:"התקפת 3-2 – Overload ל-Wing", category:"התקפה אזורית", age:"נערים", duration:12,
+     equipment:"", goals:["יצירת יתרון במספר","ריווח צד חזק"],
+     description:"Stack של שני שחקנים ל-Wing ו-cut ל-Baseline; קריאה מול העלאת שומר.",
+     coaching:["תזמון ה-cut","שינוי זווית מסירה"]},
+    {id:"D11", title:"התקפת 1-3-1 – Flash לפוסט גבוה", category:"התקפה אזורית", age:"נערים", duration:12,
+     equipment:"", goals:["פוסט גבוה כציר","Kick Out"],
+     description:"הבאת הכדור לפוסט גבוה אחרי Reversal; Split cut מסביבו לזריקה/חדירה.",
+     coaching:["קליטת כדור בסיבוב","פיווט פתוח"]},
+    {id:"D12", title:"Zone Skip & Seal", category:"התקפה אזורית", age:"נערים", duration:10,
+     equipment:"", goals:["סקיפ לצד חלש","Seal לפני הכנסה"],
+     description:"כדור עובר צד → Skip → פוסט נמוך ננעל לפני הכנסה.",
+     coaching:["סקן לפני מסירה","מסירת קשת גבוהה"]},
+    {id:"D13", title:"Zone Ball Reversal + Post Seal", category:"התקפה אזורית", age:"ילדים", duration:12,
+     equipment:"", goals:["הזזת אזור","הכנסה לפוסט"],
+     description:"3-0: העברת צד מהירה וסגירת שומר ע\"י הפוסט; מעבר ל-3x3 נגד אזור מדומה.",
+     coaching:["תזמון Seal אחרי Reversal","פנים לסל בקבלה"]},
+    {id:"D14", title:"חדירה ו-Kick מול אזור", category:"התקפה אזורית", age:"נערים", duration:10,
+     equipment:"", goals:["פיצול קו שני","קליעה חופשית"],
+     description:"חדירת פריצה מרווחת (Gap) ו-Kick ל-corners/wings; המשך רוטציות.",
+     coaching:["חדירה בשליטה","עצירה לפני עומס"]},
+
+    /* ===== יתרון מספרי ===== */
+    {id:"D15", title:"2 על 1 רציף – מסירה מוקדמת", category:"יתרון מספרי", age:"קטסל", duration:8,
+     equipment:"", goals:["Head Up","מסירה מוקדמת"],
+     description:"שני תוקפים מול מגן; סיום ב-layup או מסירת עודף.",
+     coaching:["החלטה בשני כדרורים","מסירה לפני מגע"]},
+    {id:"D16", title:"3 על 2 → 2 על 1 חזרה", category:"יתרון מספרי", age:"ילדים", duration:12,
+     equipment:"", goals:["סבב מתפרצת","תקשורת"],
+     description:"רציף הלוך-חזור: 3v2 לצד אחד, חזרה 2v1 לצד שני.",
+     coaching:["מיקום שחקן אמצע","מגרש רחב"]},
+    {id:"D17", title:"4 על 3 רציף", category:"יתרון מספרי", age:"נערים", duration:10,
+     equipment:"", goals:["Extra Pass","סבלנות"],
+     description:"4v3 חצי מגרש עם שעון 12 שנ׳ – חובה מסירת Extra לפני זריקה.",
+     coaching:["נגיעה-נגיעה","Skip בזמן לחץ"]},
+    {id:"D18", title:"Advantage Start – קלוז-אאוט מאוחר 3 על 2", category:"יתרון מספרי", age:"נערים", duration:12,
+     equipment:"", goals:["ניצול יתרון","קריאת קלוז-אאוט"],
+     description:"מאמן משהה את היציאה של מגן ל-קלוז-אאוט; התוקפים קוראים ומענישים.",
+     coaching:["חדירה לצד חלש","מסירה לפינה"]},
+    {id:"D19", title:"Numbers Game 1–4 נגד 2–3", category:"יתרון מספרי", age:"ילדים", duration:10,
+     equipment:"", goals:["קבלת החלטות","מעבר מהיר"],
+     description:"מאמן קורא מספרים – מספר התוקפים/מגנים נקבעים מידית.",
+     coaching:["זיהוי יתרון","פתיחת קווי מסירה"]},
+    {id:"D20", title:"2 על 1 – מסגרת 5 שניות", category:"יתרון מספרי", age:"קטסל", duration:8,
+     equipment:"", goals:["מהירות מחשבה","סיום"],
+     description:"שעון 5 שנ׳ לקבלת החלטה; נקודות בונוס על layup מהיר.",
+     coaching:["קו למסירה","סלטה בין קווי ריצה"]},
+
+    /* ===== שליטה בכדור (כדורי טניס) ===== */
+    {id:"D21", title:"כדרור + טניס: זרוק-תפוס ביד חלשה", category:"שליטה בכדור (כדורי טניס)", age:"קטסל", duration:8,
+     equipment:"כדור סל + כדור טניס לכל שחקן", goals:["קואורדינציה","ראש למעלה"],
+     description:"כדרור ביד חזקה תוך זריקה ותפיסת כדור טניס ביד החלשה.",
+     coaching:["כדרור נמוך נשלט","אל תסתכל על הכדור"]},
+    {id:"D22", title:"שני כדורי סל + טניס תגובה", category:"שליטה בכדור (כדורי טניס)", age:"נערים", duration:10,
+     equipment:"2 כדורי סל + טניס לזוג", goals:["רב-משימתי","תגובה"],
+     description:"שחקן מכדרר שני כדורים; בן הזוג זורק טניס לסירוגין – תפיסה/החזרה.",
+     coaching:["קצב אחיד","ברכיים כפופות"]},
+    {id:"D23", title:"כדרור + טניס עם שינויי כיוון", category:"שליטה בכדור (כדורי טניס)", age:"ילדים", duration:8,
+     equipment:"כדור סל + טניס", goals:["שליטה תחת לחץ","שינויי מהירות"],
+     description:"על אות המאמן – שינוי כיוון תוך שמירה על שליטה בטניס.",
+     coaching:["כתפיים קדימה","הגנת כדור בגוף"]},
+    {id:"D24", title:"ראש למעלה – טניס מהמאמן", category:"שליטה בכדור (כדורי טניס)", age:"ילדים", duration:10,
+     equipment:"כדורי טניס למאמן", goals:["ראיית משחק","קבלת החלטות"],
+     description:"מאמן זורק טניס לאזורים שונים; השחקנים מכדררים ומוסרים טניס ביד החלשה.",
+     coaching:["קריאה מוקדמת","שחרור מהיר"]},
+    {id:"D25", title:"Hand-Eye Ladder עם טניס", category:"שליטה בכדור (כדורי טניס)", age:"קטסל", duration:8,
+     equipment:"סולם זריזות + טניס", goals:["קואורדינציה","רגליים מהירות"],
+     description:"דגמי צעדים בסולם תוך זריקה-תפיסה של טניס.",
+     coaching:["מרכז גוף נמוך","נשימה בקצב"]},
+
+    /* ===== אחד על אחד ===== */
+    {id:"D26", title:"1 על 1 – שלושה כדרורים", category:"אחד על אחד", age:"ילדים", duration:8,
+     equipment:"", goals:["יעילות","פיניש"],
+     description:"מותר עד 3 כדרורים; בונוס על סיום מהיר ובלי חזרה.",
+     coaching:["התקפה קווית","עצירה חזקה"]},
+    {id:"D27", title:"1 על 1 מקלוז-אאוט", category:"אחד על אחד", age:"נערים", duration:10,
+     equipment:"", goals:["קריאת קלוז-אאוט","First Step"],
+     description:"מגן יוצא לקלוז-אאוט; התוקף קורא זווית ויוצא.",
+     coaching:["פאמפ פייק חכם","חדירה לצד חלש"]},
+    {id:"D28", title:"1 על 1 מאגפים (Wing/Elbow)", category:"אחד על אחד", age:"נערים", duration:10,
+     equipment:"", goals:["טווחי יציאה","Body Bump"],
+     description:"פתיחה משתי עמדות; הגבלת זמן 6 שנ׳ להתקפה.",
+     coaching:["קו כתף-כתף","סיום דרך הגוף"]},
+    {id:"D29", title:"1 על 1 גב לסל – שתי נגיעות", category:"אחד על אחד", age:"ילדים", duration:10,
+     equipment:"", goals:["פוסט אפ","פיווט"],
+     description:"שתי נגיעות לפני סיום; דגש על פיווט ו-seal.",
+     coaching:["אל תוריד נמוך","פיווט פתוח/סגור"]},
+    {id:"D30", title:"1 על 1 רציף – מנצח נשאר", category:"אחד על אחד", age:"נערים", duration:12,
+     equipment:"", goals:["תחרותיות","סיבולת"],
+     description:"מנצח נשאר במגרש."},
+    {id:"D31", title:"1 על 1 עם יתרון חצי צעד", category:"אחד על אחד", age:"ילדים", duration:8,
+     equipment:"", goals:["ניצול יתרון","First Step"],
+     description:"התוקף עם יציאה מוקדמת של חצי צעד.",
+     coaching:["הטיית כתף","סיום דרך הקרש"]},
+
+    /* ===== Pass & Cut ===== */
+    {id:"D32", title:"Give & Go בסיסי", category:"Pass & Cut", age:"קטסל", duration:10,
+     equipment:"כדור לכל זוג", goals:["מסירה","תנועה ללא כדור"],
+     description:"מסירה ל-Top → חתוך לסל → חזרה.",
+     coaching:["עין לכדור + עין לשטח","ידיים מוכנות"]},
+    {id:"D33", title:"Pass-Cut-Fill בשלשות", category:"Pass & Cut", age:"ילדים", duration:10,
+     equipment:"3 עמדות מסומנות", goals:["תזמון","מילוי פינות"],
+     description:"Pass → Cut → Fill; אחרי 5 מחזורים מעבר ל-3x3.",
+     coaching:["אל תרדוף אחרי הכדור","Spacing קבוע"]},
+    {id:"D34", title:"Corner Fill + Backdoor", category:"Pass & Cut", age:"נערים", duration:12,
+     equipment:"", goals:["Backdoor","קריאה מול דחיפה"],
+     description:"מסירה ל-Wing → מילוי פינה → Backdoor כשיש דחיפה.",
+     coaching:["over/under","מסירה בזמן"]},
+    {id:"D35", title:"Split Cut מהפוסט", category:"Pass & Cut", age:"נערים", duration:12,
+     equipment:"", goals:["שיתוף פעולה","חיתוכים"],
+     description:"כדור לפוסט; שני שחקנים עושים Split סביבו.",
+     coaching:["גע-ולך","מסירה חדה לקלע"]},
+    {id:"D36", title:"3x0 ל-3x3 Pass & Cut", category:"Pass & Cut", age:"נערים", duration:15,
+     equipment:"", goals:["מעבר לעקרון במשחק","קבלת החלטות"],
+     description:"בניית דפוס 3x0 ואז מעבר ל-3x3.",
+     coaching:["ריווח לפני כדרור","מסירה מוקדמת"]}
+  ];
+
+  // ===== מצב ואחסון =====
+  const state = { bank: [], plan: [], filters: {cat:"", age:"", dur:"", q:""} };
+  const LS_BANK='bb_bank_v1', LS_PLAN='bb_plan_v1', LS_META='bb_meta_v1';
+
+  const $ = (id)=>document.getElementById(id);
+  const pills = (arr)=> (arr && arr.length) ? arr.map(x=>'<span class="pill">'+x+'</span>').join(' ') : '';
+
+  function safeGet(key, fallback){
+    try{ const v = localStorage.getItem(key); return v==null? fallback : JSON.parse(v); }
+    catch(_){ return fallback; }
+  }
+  function saveLocal(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(_){}
+  }
+
+  function loadAll(){
+    const bankLS = safeGet(LS_BANK, null);
+    state.bank = (Array.isArray(bankLS) && bankLS.length) ? bankLS : seed.slice();
+
+    state.plan = Array.isArray(safeGet(LS_PLAN, [])) ? safeGet(LS_PLAN, []) : [];
+    const meta = safeGet(LS_META, {});
+    $('plan-title').value = meta.title || '';
+    $('plan-date').value  = meta.date  || '';
+    $('plan-group').value = meta.group || '';
+    $('plan-notes').value = meta.notes || '';
+    saveLocal(LS_BANK, state.bank);
+  }
+
+  function initFilters(){
+    const cats = [...new Set(state.bank.map(d=>d.category).filter(Boolean))];
+    const ages = [...new Set(state.bank.map(d=>d.age).filter(Boolean))];
+    $('f-cat').innerHTML = '<option value="">קטגוריה</option>' + cats.map(c=>'<option>'+c+'</option>').join('');
+    $('f-age').innerHTML = '<option value="">שכבת גיל</option>' + ages.map(a=>'<option>'+a+'</option>').join('');
+  }
+
+  function applyFilters(){
+    const f = state.filters;
+    const q = (f.q||'').toLowerCase();
+    const list = state.bank.filter(d =>
+      (!f.cat || d.category===f.cat) &&
+      (!f.age || d.age===f.age) &&
+      (!f.dur || Number(d.duration) <= Number(f.dur)) &&
+      (!q || ( (d.title||'')+(d.description||'')+(d.equipment||'')+(d.goals||[]).join(',') ).toLowerCase().includes(q))
+    );
+    renderBank(list);
+    $('sum-bank').textContent = list.length + ' מתוך ' + state.bank.length + ' תרגילים במאגר';
+  }
+
+  function renderBank(list){
+    const root = $('bank');
+    root.innerHTML = '';
+    if(!list || !list.length){
+      root.innerHTML =
+        '<div class="item"><p class="muted">לא נמצאו תרגילים לפי הסינון.</p>'+
+        '<div class="toolbar"><button class="btn" id="btn-empty-clear">נקה סינון</button>'+
+        '<button class="btn" id="btn-empty-restore">שחזר מאגר</button></div></div>';
+      const clear = ()=>{ state.filters={cat:'',age:'',dur:'',q:''};
+        $('f-cat').value='';$('f-age').value='';$('f-dur').value='';$('f-q').value='';
+        applyFilters(); };
+      const restore = ()=>{ if(confirm('לשחזר את מאגר ברירת המחדל?')){
+        localStorage.removeItem(LS_BANK); state.bank=seed.slice(); saveLocal(LS_BANK,state.bank); initFilters(); applyFilters(); } };
+      const c1 = $('btn-empty-clear'); if(c1) c1.onclick = clear;
+      const r1 = $('btn-empty-restore'); if(r1) r1.onclick = restore;
+      return;
+    }
+    list.forEach(d=>{
+      const el = document.createElement('div');
+      el.className = 'item';
+      var topRow =
+        '<div class="row">'+
+          '<div><h4>'+d.title+'</h4>'+
+          '<div class="muted small">'+(d.category||'')+' · '+(d.age||'')+' · '+d.duration+' דק׳</div></div>'+
+          '<button class="btn" aria-label="הוסף למערך">הוסף</button>'+
+        '</div>';
+      var goalsEq = '<div class="row wrap small">'+ pills(d.goals) + (d.equipment?'<span class="pill">ציוד: '+d.equipment+'</span>':'') + '</div>';
+      el.innerHTML = topRow + '<p>'+ (d.description||'') +'</p>' + goalsEq;
+      el.querySelector('button').onclick = ()=> addToPlan(d.id);
+      root.appendChild(el);
+    });
+  }
+
+  function addToPlan(id){ state.plan.push({id:id, note:''}); renderPlan(); saveLocal(LS_PLAN, state.plan); }
+  function removeFromPlan(i){ state.plan.splice(i,1); renderPlan(); saveLocal(LS_PLAN, state.plan); }
+  function move(i,dir){ const j=i+dir; if(j<0||j>=state.plan.length) return; const t=state.plan[i]; state.plan[i]=state.plan[j]; state.plan[j]=t; renderPlan(); saveLocal(LS_PLAN,state.plan); }
+
+  function totals(){
+    const map = Object.fromEntries(state.bank.map(x=>[x.id,x]));
+    const tot = state.plan.reduce((s,p)=> s + (map[p.id]? Number(map[p.id].duration)||0 : 0), 0);
+    return {count: state.plan.length, time: tot};
+  }
+
+  function renderPlan(){
+    const root = $('plan'); root.innerHTML='';
+    const map = Object.fromEntries(state.bank.map(x=>[x.id,x]));
+    state.plan.forEach((p,idx)=>{
+      const d = map[p.id]; if(!d) return;
+      const el = document.createElement('div'); el.className='slot';
+      let chips = '';
+      if(d.category) chips += '<span class="pill">'+d.category+'</span> ';
+      if(d.age) chips += '<span class="pill">'+d.age+'</span> ';
+      const header =
+        '<div class="row" style="justify-content:space-between">'+
+          '<div class="row wrap"><h4>'+(idx+1)+'. '+d.title+'</h4>'+
+          '<span class="pill">'+d.duration+' דק׳</span>'+chips+'</div>'+
+          '<div class="row">'+
+            '<button class="btn" title="למעלה" onclick="__move('+idx+',-1)">↑</button>'+
+            '<button class="btn" title="למטה" onclick="__move('+idx+',1)">↓</button>'+
+            '<button class="btn bad" title="הסר" onclick="__remove('+idx+')">הסר</button>'+
+          '</div>'+
+        '</div>';
+      const goals = '<div class="muted small">מטרות: '+ ( (d.goals||[]).join(' · ') ) + (d.equipment? ' · ציוד: '+d.equipment : '') + '</div>';
+      const coach = (d.coaching && d.coaching.length) ? '<div class="small"><strong>דגשים:</strong> '+ d.coaching.join(' · ') +'</div>' : '';
+      const note =
+        '<div class="row" style="margin-top:6px">'+
+          '<textarea rows="2" placeholder="הערה אישית לתרגיל" oninput="__note('+idx+', this.value)">'+(p.note||'')+'</textarea>'+
+        '</div>';
+      el.innerHTML = header + '<p>'+(d.description||'')+'</p>'+goals+coach+note;
+      root.appendChild(el);
+    });
+    const t = totals();
+    $('sum-count').textContent = t.count+' תרגילים';
+    $('sum-time').textContent = t.time+' דק׳ סה\"כ';
+
+    // שמירת מטא
+    saveLocal(LS_META, {
+      title: $('plan-title').value.trim(),
+      date: $('plan-date').value,
+      group: $('plan-group').value.trim(),
+      notes: $('plan-notes').value.trim()
+    });
+  }
+  // פונקציות עזר עבור כפתורים בתוך innerHTML
+  window.__move = move;
+  window.__remove = removeFromPlan;
+  window.__note = function(i,val){ state.plan[i].note = val; saveLocal(LS_PLAN,state.plan); };
+
+  // ===== אירועים =====
+  $('f-cat').oninput = e=>{ state.filters.cat = e.target.value; applyFilters(); };
+  $('f-age').oninput = e=>{ state.filters.age = e.target.value; applyFilters(); };
+  $('f-dur').oninput = e=>{ state.filters.dur = e.target.value; applyFilters(); };
+  $('f-q').oninput   = e=>{ state.filters.q   = e.target.value; applyFilters(); };
+
+  $('btn-print').onclick = ()=> window.print();
+  $('btn-save-plan').onclick = ()=>{ saveLocal(LS_PLAN,state.plan); alert('נשמר ✔'); };
+  $('btn-reset-plan').onclick = ()=>{ if(confirm('לנקות את המערך?')){ state.plan=[]; renderPlan(); saveLocal(LS_PLAN,state.plan); } };
+
+  $('btn-clear-filters').onclick = ()=>{
+    state.filters={cat:'',age:'',dur:'',q:''};
+    $('f-cat').value='';$('f-age').value='';$('f-dur').value='';$('f-q').value='';
+    applyFilters();
+  };
+  $('btn-restore-seed').onclick = ()=>{
+    if(confirm('לשחזר את מאגר ברירת המחדל? זה ידרוס מאגר שמור.')){
+      state.bank = seed.slice(); saveLocal(LS_BANK,state.bank); initFilters(); applyFilters();
+    }
+  };
+  $('btn-clear-all').onclick = ()=>{
+    if(confirm('איפוס מלא (מאגר+מערך+מטא)?')){
+      localStorage.removeItem(LS_BANK);
+      localStorage.removeItem(LS_PLAN);
+      localStorage.removeItem(LS_META);
+      loadAll(); initFilters(); applyFilters(); renderPlan();
+    }
+  };
+
+  // מובייל: פתיחת/סגירת סיידבר
+  (function(){
+    const btnOpen = $('btn-filter'), btnClose = $('btn-close-sidebar');
+    const backdrop = document.createElement('div'); backdrop.id='backdrop'; document.body.appendChild(backdrop);
+    const open = ()=> document.body.classList.add('sidebar-open');
+    const close= ()=> document.body.classList.remove('sidebar-open');
+    if(btnOpen) btnOpen.onclick = open;
+    if(btnClose) btnClose.onclick = close;
+    backdrop.onclick = close;
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+  })();
+
+  // אתחול
+  loadAll(); initFilters(); applyFilters(); renderPlan();
+  </script>
+</body>
+</html>
