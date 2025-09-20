@@ -183,6 +183,7 @@
         </div>
         <div class="toolbar not-print" style="margin-top:8px">
           <button class="btn" id="btn-clear-filters">נקה סינון</button>
+          <button class="btn" id="btn-restore-seed">שחזר מאגר</button>
         </div>
         <div class="hr"></div>
         <div class="sum small" id="sum-bank"></div>
@@ -401,9 +402,32 @@ const LS_PLAN = 'bb_plan_v1';
 const LS_META = 'bb_meta_v1';
 
 function load(){
-  const bankLS = JSON.parse(localStorage.getItem(LS_BANK) || 'null');
-  // מיזוג מאגר שמור עם מאגר ברירת מחדל כך שתראה את התרגילים החדשים גם אם שמרת בעבר
-  const mergeById = (a,b)=>{ const map = new Map(); b.forEach(x=>map.set(x.id,x)); a?.forEach(x=>map.set(x.id,x)); return [...map.values()]; };
+  try{
+    // נטען מאגר מהדפדפן בצורה סלחנית; אם ריק/שבור → seed
+    let bankLS = null;
+    try{ bankLS = JSON.parse(localStorage.getItem(LS_BANK) || 'null'); }catch(_){ bankLS = null; }
+    const mergeById = (a,b)=>{ const map=new Map(); (b||[]).forEach(x=>x&&x.id&&map.set(x.id,x)); (a||[]).forEach(x=>x&&x.id&&map.set(x.id,x)); return [...map.values()]; };
+    const useSeed = !Array.isArray(bankLS) || bankLS.length===0;
+    state.bank = useSeed ? seed.slice() : mergeById(bankLS, seed);
+
+    // טען מערך/מטא בבטחה
+    let plan=null, meta=null;
+    try{ plan = JSON.parse(localStorage.getItem(LS_PLAN) || '[]'); }catch(_){ plan=[]; }
+    state.plan = Array.isArray(plan)? plan : [];
+    try{ meta = JSON.parse(localStorage.getItem(LS_META) || '{}'); }catch(_){ meta={}; }
+    byId('plan-title').value = (meta&&meta.title)||'';
+    byId('plan-date').value = (meta&&meta.date)||'';
+    byId('plan-group').value = (meta&&meta.group)||'';
+    byId('plan-notes').value = (meta&&meta.notes)||'';
+
+    localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
+  }catch(err){
+    const b = document.getElementById('errbox');
+    b.style.display='block';
+    b.textContent = 'Storage Error:
+' + (err && err.message ? err.message : err);
+  }
+};
   const bank = bankLS ? mergeById(bankLS, seed) : seed;
   state.bank = bank;
 
@@ -467,6 +491,21 @@ function applyFilters(){
 function renderBank(list){
   const root = byId('bank');
   root.innerHTML = '';
+  if(!list || list.length===0){
+    root.innerHTML = `
+      <div class="item">
+        <p class="muted">לא נמצאו תרגילים לפי הסינון הנוכחי.</p>
+        <div class="toolbar">
+          <button class="btn" id="btn-empty-clear">נקה סינון</button>
+          <button class="btn" id="btn-empty-restore">שחזר מאגר</button>
+        </div>
+      </div>`;
+    const clear = ()=>{ state.filters={cat:'',age:'',dur:'',q:''}; byId('f-cat').value=''; byId('f-age').value=''; byId('f-dur').value=''; byId('f-q').value=''; applyFilters(); };
+    const restore = ()=>{ if(confirm('לשחזר את מאגר ברירת המחדל?')){ localStorage.removeItem(LS_BANK); state.bank=seed.slice(); save(); initFilters(); applyFilters(); toast('המאגר שוחזר ✔'); } };
+    const c1 = document.getElementById('btn-empty-clear'); if(c1) c1.onclick = clear;
+    const r1 = document.getElementById('btn-empty-restore'); if(r1) r1.onclick = restore;
+    return;
+  }
   list.forEach(d => {
     const el = document.createElement('div');
     el.className = 'item';
@@ -474,6 +513,17 @@ function renderBank(list){
       <div class="row">
         <div>
           <h4>${d.title}</h4>
+          <div class="muted small">${d.category || ''} · ${d.age || ''} · ${d.duration} דק׳</div>
+        </div>
+        <button class="btn" aria-label="הוסף למערך">הוסף</button>
+      </div>
+      <p>${d.description || ''}</p>
+      <div class="row wrap small">${fmtGoals(d.goals)}${d.equipment?`<span class="pill">ציוד: ${d.equipment}</span>`:''}</div>
+    `;
+    el.querySelector('button').onclick = ()=> addToPlan(d.id);
+    root.appendChild(el);
+  });
+}</h4>
           <div class="muted small">${d.category || ''} · ${d.age || ''} · ${d.duration} דק׳</div>
         </div>
         <button class="btn" aria-label="הוסף למערך">הוסף</button>
@@ -644,6 +694,17 @@ if(clearBtn){
     state.filters = {cat:'', age:'', dur:'', q:''};
     byId('f-cat').value=''; byId('f-age').value=''; byId('f-dur').value=''; byId('f-q').value='';
     applyFilters();
+  };
+}
+const restoreBtn = document.getElementById('btn-restore-seed');
+if(restoreBtn){
+  restoreBtn.onclick = ()=>{
+    if(confirm('לשחזר את מאגר ברירת המחדל? זה ידרוס מאגר שמור.')){
+      localStorage.removeItem(LS_BANK);
+      state.bank = seed.slice();
+      save(); initFilters(); applyFilters(); renderBank(state.bank);
+      toast('המאגר שוחזר ✔');
+    }
   };
 }
 
