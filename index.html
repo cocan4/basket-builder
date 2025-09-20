@@ -96,7 +96,7 @@
     /* כרטיס הסינון (sticky) נשאר בעמודה 1, המאגר עובר לעמודה 2 */
     .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
     .col.left > .spacer{display:none}
-    .col.left > .card:not(.sticky){grid-column:2}
+    .col.left > #bank-card{grid-column:2}
     /* שיפור מרווחים בעמודה הימנית (המערך) */
     .app > .col:not(.left){padding:16px}
   }
@@ -109,7 +109,7 @@
     .app{grid-template-columns:260px 1fr}
     .col.left{display:contents;padding:0}
     .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
-    .col.left > .card:not(.sticky){grid-column:2}
+    .col.left > #bank-card{grid-column:2}
     .app > .col:not(.left){grid-column:2}
   }
   /* דסקטופ רחב: 3 טורים – סינון | מאגר | מערך */
@@ -118,7 +118,7 @@
     .col.left{display:contents;padding:0}
     .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
     .col.left > .spacer{display:none}
-    .col.left > .card:not(.sticky){grid-column:2}
+    .col.left > #bank-card{grid-column:2}
     .app > .col:not(.left){grid-column:3}
   }
   /* מובייל: מגירה נשלפת (off‑canvas) לסינון + מאגר */
@@ -181,13 +181,15 @@
           </div>
           <input id="f-q" placeholder="חיפוש חופשי (שם/מטרה/ציוד)" />
         </div>
+        <div class="toolbar not-print" style="margin-top:8px">
+          <button class="btn" id="btn-clear-filters">נקה סינון</button>
+        </div>
         <div class="hr"></div>
         <div class="sum small" id="sum-bank"></div>
       </div>
 
       <div class="spacer"></div>
-      <div class="card">
-        <h3>מאגר תרגילים</h3>
+      <div class="card" id="bank-card"><h3>מאגר תרגילים</h3>
         <div id="bank" class="list" aria-live="polite"></div>
       </div>
     </div>
@@ -604,7 +606,48 @@ if(mbtn){
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
 }
 
-load(); initFilters(); applyFilters(); renderBank(state.bank); renderPlan();
+// --- תפריט צד נשלף במובייל ---
+const mbtn = document.getElementById('btn-filter');
+if(mbtn){
+  const backdrop = document.createElement('div');
+  backdrop.id = 'backdrop';
+  document.body.appendChild(backdrop);
+  const closeBtn = document.getElementById('btn-close-sidebar');
+  const open = ()=> document.body.classList.add('sidebar-open');
+  const close = ()=> document.body.classList.remove('sidebar-open');
+  mbtn.onclick = open;
+  backdrop.onclick = close;
+  if(closeBtn) closeBtn.onclick = close;
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+}
+
+// --- העברה חכמה של כרטיס המאגר כדי שתמיד ייראה ---
+function placeBankCard(){
+  const app = document.querySelector('.app');
+  const left = document.querySelector('.col.left');
+  const bank = document.getElementById('bank-card');
+  const planCol = document.querySelector('.app > .col:not(.left)');
+  if(!app || !left || !bank || !planCol) return;
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  if(isMobile){
+    if(bank.parentElement !== app){ app.insertBefore(bank, planCol); }
+  }else{
+    if(bank.parentElement !== left){ left.appendChild(bank); }
+  }
+}
+window.addEventListener('resize', placeBankCard);
+
+// --- ניקוי סינון ---
+const clearBtn = document.getElementById('btn-clear-filters');
+if(clearBtn){
+  clearBtn.onclick = ()=>{
+    state.filters = {cat:'', age:'', dur:'', q:''};
+    byId('f-cat').value=''; byId('f-age').value=''; byId('f-dur').value=''; byId('f-q').value='';
+    applyFilters();
+  };
+}
+
+load(); initFilters(); applyFilters(); renderBank(state.bank); renderPlan(); placeBankCard();
 </script>
 </body>
 </html>
