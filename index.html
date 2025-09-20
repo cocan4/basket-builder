@@ -9,7 +9,7 @@
     html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg);color:var(--ink)}
     a{color:inherit}
-    .app{display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:100%;max-inline-size:1280px;margin-inline:auto;padding-inline:8px}
+    .app{display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:100%}
     header{grid-column:1/-1;background:#0b1220;position:sticky;top:0;z-index:5;border-block-end:1px solid #263047}
     header .row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px}
     header h1{font-size:20px;margin:0;font-weight:700}
@@ -21,13 +21,12 @@
     input,select,textarea,button{font:inherit;color:inherit}
     input,select,textarea{background:#0b1220;border:1px solid #27324b;border-radius:10px;padding:8px;inline-size:100%}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{background:#1a2440;border:1px solid #2a3553;border-radius:10px;padding:8px 12px;cursor:pointer;min-height:40px}
+    .btn{background:#1a2440;border:1px solid #2a3553;border-radius:10px;padding:8px 12px;cursor:pointer}
     .btn.primary{background:#1b3a35;border-color:#1f5046;box-shadow:0 0 0 1px #255e52 inset}
     .btn.good{background:#12341e;border-color:#1a4e2b;color:var(--good)}
     .btn.bad{background:#3a1b1b;border-color:#512020;color:var(--bad)}
     .grid{display:grid;grid-template-columns:1fr;gap:10px}
     .row{display:flex;gap:8px;align-items:center}
-    .row.wrap{flex-wrap:wrap}
     .pill{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;background:#0f1b30;border:1px solid #263047;color:var(--muted);font-size:12px}
     .list{display:grid;gap:8px}
     .item{padding:10px;border:1px solid #2a3553;border-radius:12px;background:#0f1b30}
@@ -40,40 +39,128 @@
     .plan .slot h4{margin:0 0 6px 0}
     .plan .slot .controls{display:flex;gap:6px;flex-wrap:wrap}
     .sum{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted)}
+    .row.wrap{flex-wrap:wrap}
+    .flex{display:flex;gap:8px}
+    .grow{flex:1}
+    .space{inline-size:8px}
     .sticky{position:sticky;top:76px}
+
+    /* הדפסה ל-PDF */
+    @media print{
+      header,.col.left{display:none}
+      .app{grid-template-columns:1fr}
+      body{background:white;color:black}
+      .card{border:none}
+      .slot{break-inside:avoid}
+      .print-header{display:block}
+      .not-print{display:none}
+    }
     .print-header{display:none;margin-block-end:12px}
     .print-header h2{margin:0}
     .hr{border-block-start:1px solid #33415e;margin:8px 0}
     .small{font-size:12px}
-    #errbox{position:fixed;inset:12px;z-index:99999;background:#2b1313;color:#fff;padding:12px;border:1px solid #7a3d3d;border-radius:12px;display:none;direction:ltr;white-space:pre-wrap;overflow:auto}
-    /* רספונסיביות */
-    @media (max-width:1200px){ .app{grid-template-columns:280px 1fr} }
-    @media (max-width:900px){ .app{grid-template-columns:1fr;gap:12px} .sticky{position:static} .col{padding:12px} header .row{flex-wrap:wrap} header .toolbar{width:100%;padding-top:6px} header .toolbar .btn{flex:1} }
-    @media (max-width:600px){ body{font-size:16px} .card{padding:10px;border-radius:12px} .btn{min-height:44px;padding:12px 14px} .row.wrap input,.row.wrap select{flex:1 1 48%} input,select,textarea{font-size:16px} }
-    /* הדפסה */
-    @media print{ header,.col.left{display:none} .app{grid-template-columns:1fr} body{background:white;color:black} .card{border:none} .slot{break-inside:avoid} .print-header{display:block} .not-print{display:none} }
-  </style>
+    
+  /* ===== התאמה לכל המסכים (מוביל/טאבלט/מחשב) ===== */
+  .app{max-inline-size:1280px;margin-inline:auto;padding-inline:8px}
+  .btn{min-height:40px}
+
+  /* דסקטופ רחב → טאבלט */
+  @media (max-width:1200px){
+    .app{grid-template-columns:280px 1fr}
+  }
+  
+  /* טאבלט → מובייל */
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr;gap:12px}
+    .sticky{position:static}
+    .col{padding:12px}
+    header .row{flex-wrap:wrap}
+    header .toolbar{width:100%;padding-top:6px}
+    header .toolbar .btn{flex:1}
+  }
+
+  /* מובייל קטן */
+  @media (max-width:600px){
+    body{font-size:16px}
+    .card{padding:10px;border-radius:12px}
+    .btn{min-height:44px;padding:12px 14px}
+    .row.wrap input,.row.wrap select{flex:1 1 48%}
+    input,select,textarea{font-size:16px} /* מונע זום אוטומטי ב-iOS */
+  }
+  
+  /* --- פריסת תפריט צד: סינון משמאל, מאגר באמצע, מערך מימין (דסקטופ) --- */
+  @media (min-width:1200px){
+    .app{grid-template-columns:260px 1fr 1fr}
+    /* הופכים את העמודה השמאלית ל"שקופה" כדי שהכרטיסים יהפכו לאייטמים של הגריד הראשי */
+    .col.left{display:contents;padding:0}
+    /* כרטיס הסינון (sticky) נשאר בעמודה 1, המאגר עובר לעמודה 2 */
+    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
+    .col.left > .spacer{display:none}
+    .col.left > .card:not(.sticky){grid-column:2}
+    /* שיפור מרווחים בעמודה הימנית (המערך) */
+    .app > .col:not(.left){padding:16px}
+  }
+
+  /* ===== רספונסיביות מלאה לכל מסך/מצב ===== */
+  .only-mobile{display:none}
+
+  /* טאבלט: 2 טורים – סינון כ-sidebar שמאלה, מאגר לידו, המערך בעמודה הימנית */
+  @media (min-width:900px) and (max-width:1199px){
+    .app{grid-template-columns:260px 1fr}
+    .col.left{display:contents;padding:0}
+    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
+    .col.left > .card:not(.sticky){grid-column:2}
+    .app > .col:not(.left){grid-column:2}
+  }
+  /* דסקטופ רחב: 3 טורים – סינון | מאגר | מערך */
+  @media (min-width:1200px){
+    .app{grid-template-columns:260px 1fr 1fr}
+    .col.left{display:contents;padding:0}
+    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
+    .col.left > .spacer{display:none}
+    .col.left > .card:not(.sticky){grid-column:2}
+    .app > .col:not(.left){grid-column:3}
+  }
+  /* מובייל: מגירה נשלפת (off‑canvas) לסינון + מאגר */
+  @media (max-width:900px){
+    .only-mobile{display:inline-flex}
+    .app{grid-template-columns:1fr;gap:12px}
+    .sticky{position:static}
+    .col{padding:12px}
+    header .row{flex-wrap:wrap}
+    header .toolbar{width:100%;padding-top:6px}
+    header .toolbar .btn{flex:1}
+    .col.left{position:fixed;top:0;bottom:0;inset-inline-start:0;inline-size:min(86vw,360px);background:#0b1220;border-inline-end:1px solid #263047;padding:16px;transform:translateX(-100%);transition:transform .2s ease;z-index:60;overflow:auto}
+    body.sidebar-open .col.left{transform:translateX(0)}
+    #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+    body.sidebar-open #backdrop{opacity:1;pointer-events:auto}
+  }
+</style>
 </head>
 <body>
-<div id="errbox"></div>
   <div class="app">
     <header>
       <div class="row">
         <div>
           <h1>בונה מערכי אימון – כדורסל</h1>
-          <small class="muted">בחר תרגילים ← הוסף למערך → הדפס ל-PDF</small>
+          <small class="muted">בחר תרגילים ← הוסף למערך → הדפס ל‑PDF</small>
         </div>
         <div class="toolbar not-print">
+          <button class="btn only-mobile" id="btn-filter">סינון</button>
           <button class="btn" id="btn-import">ייבוא מאגר</button>
           <button class="btn" id="btn-export">ייצוא מאגר</button>
           <button class="btn" id="btn-clear">איפוס</button>
-          <button class="btn primary" id="btn-print">הדפס/שמירה כ-PDF</button>
+          <button class="btn primary" id="btn-print">הדפס/שמירה כ‑PDF</button>
         </div>
       </div>
     </header>
 
     <!-- צד שמאל: מאגר תרגילים וסינון -->
     <div class="col left">
+      <div class="row only-mobile" style="justify-content:space-between;margin-bottom:8px">
+        <strong>סינון</strong>
+        <button class="btn" id="btn-close-sidebar">סגור ✕</button>
+      </div>
       <div class="card sticky">
         <h3>סינון</h3>
         <div class="grid">
@@ -143,12 +230,7 @@
   </div>
 
 <script>
-window.addEventListener('error', (e)=>{
-  const b = document.getElementById('errbox');
-  b.style.display = 'block';
-  b.textContent = 'JavaScript Error:\\n' + (e.error && e.error.stack ? e.error.stack : (e.message || 'Unknown error'));
-});
-
+// ===== נתוני דוגמה =====
 const seed = [
   {id:"D1", title:"חימום דינמי – קווים", category:"חימום", age:"קטסל", duration:10,
    equipment:"קונוס לכל שחקן", goals:["עלייה דופק","קואורדינציה"],
@@ -166,6 +248,18 @@ const seed = [
    equipment:"כדור לכל שחקן", goals:["צעד וחצי","סיום מרוכז"],
    description:"טורים לשני הצדדים, דגש על ספירה: כדרור – צעד – צעד – עליה.",
    coaching:["פוקוס על קרש","שימוש ביד שמאל"]},
+  {id:"D5", title:"2 על 1 במתפרצת", category:"יתרון מספרי", age:"ילדים", duration:12,
+   equipment:"", goals:["קבלת החלטות","מסירה מוקדמת"],
+   description:"יציאה משלושה, שחקן אמצע מול שני תוקפים.",
+   coaching:["מסירה לשטח פנוי","ריווח"]},
+  {id:"D6", title:"3 על 3 חצי מגרש – כללים", category:"קבוצתי", age:"נערים", duration:18,
+   equipment:"", goals:["Spacing","קריאה של משחק"],
+   description:"3x3 עם חוקים: מסירה ראשונה ל-wings, חתיכות backdoor.",
+   coaching:["תנועת כדור לפני כדרור","תקשורת"]},
+  {id:"D7", title:"קליעה לאחר עצירה", category:"קליעה", age:"נערים", duration:12,
+   equipment:"", goals:["Stop & Pop","איזון"],
+   description:"קבלת מסירה, עצירת jump stop או stride, עלייה לקליעה.",
+   coaching:["מרכז כובד נמוך","follow-through"]},
 
   /* ===== התקפה אזורית ===== */
   {id:"D8", title:"התקפת 2-3 – Hi-Low לפוסט", category:"התקפה אזורית", age:"ילדים", duration:12,
@@ -190,7 +284,7 @@ const seed = [
    coaching:["סקן לפני מסירה","מסירת קשת גבוהה"]},
   {id:"D13", title:"Zone Ball Reversal + Post Seal", category:"התקפה אזורית", age:"ילדים", duration:12,
    equipment:"", goals:["הזזת אזור","הכנסה לפוסט"],
-   description:"3-0: העברת צד מהירה וסגירת שומר ע\"י הפוסט; מעבר ל-3x3 נגד אזור מדומה.",
+   description:"3-0: העברת צד מהירה וסגירת שומר ע"י הפוסט; מעבר ל-3x3 נגד אזור מדומה.",
    coaching:["תזמון Seal אחרי Reversal","פנים לסל בקבלה"]},
   {id:"D14", title:"חדירה ו-Kick מול אזור", category:"התקפה אזורית", age:"נערים", duration:10,
    equipment:"", goals:["פיצול קו שני","קליעה חופשית"],
@@ -292,48 +386,61 @@ const seed = [
    coaching:["ריווח לפני כדרור","מסירה מוקדמת"]}
 ];
 
-const state = { bank: [], plan: [], filters: {cat:"", age:"", dur:"", q:""} };
-const LS_BANK = 'bb_bank_v1'; const LS_PLAN = 'bb_plan_v1'; const LS_META = 'bb_meta_v1';
+// ===== מצב אפליקציה =====
+const state = {
+  bank: [],
+  plan: [], // [{id, customNote}]
+  filters: {cat:"", age:"", dur:"", q:""}
+};
+
+// ===== אחסון מקומי =====
+const LS_BANK = 'bb_bank_v1';
+const LS_PLAN = 'bb_plan_v1';
+const LS_META = 'bb_meta_v1';
 
 function load(){
-  try{
-    const bankLS = JSON.parse(localStorage.getItem(LS_BANK) || 'null');
-    const mergeById = (a,b)=>{ const map = new Map(); b.forEach(x=>map.set(x.id,x)); (a||[]).forEach(x=>map.set(x.id,x)); return [...map.values()]; };
-    const bank = bankLS ? mergeById(bankLS, seed) : seed;
-    state.bank = bank;
+  const bankLS = JSON.parse(localStorage.getItem(LS_BANK) || 'null');
+  // מיזוג מאגר שמור עם מאגר ברירת מחדל כך שתראה את התרגילים החדשים גם אם שמרת בעבר
+  const mergeById = (a,b)=>{ const map = new Map(); b.forEach(x=>map.set(x.id,x)); a?.forEach(x=>map.set(x.id,x)); return [...map.values()]; };
+  const bank = bankLS ? mergeById(bankLS, seed) : seed;
+  state.bank = bank;
 
-    const plan = JSON.parse(localStorage.getItem(LS_PLAN) || '[]');
-    state.plan = Array.isArray(plan) ? plan : [];
-    const meta = JSON.parse(localStorage.getItem(LS_META) || '{}');
-    if(meta.title) byId('plan-title').value = meta.title;
-    if(meta.date) byId('plan-date').value = meta.date;
-    if(meta.group) byId('plan-group').value = meta.group;
-    if(meta.notes) byId('plan-notes').value = meta.notes;
-    localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
-  }catch(err){
-    const b = document.getElementById('errbox');
-    b.style.display='block';
-    b.textContent = 'Storage Error:\\n' + (err && err.message ? err.message : err);
-  }
+  const plan = JSON.parse(localStorage.getItem(LS_PLAN) || '[]');
+  state.plan = plan;
+  const meta = JSON.parse(localStorage.getItem(LS_META) || '{}');
+  if(meta.title) byId('plan-title').value = meta.title;
+  if(meta.date) byId('plan-date').value = meta.date;
+  if(meta.group) byId('plan-group').value = meta.group;
+  if(meta.notes) byId('plan-notes').value = meta.notes;
+
+  // שמירה חזרה כדי לייצב את המאגר הממוזג
+  localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
+}');
+  if(meta.title) byId('plan-title').value = meta.title;
+  if(meta.date) byId('plan-date').value = meta.date;
+  if(meta.group) byId('plan-group').value = meta.group;
+  if(meta.notes) byId('plan-notes').value = meta.notes;
 }
 
-function save(){ try{ localStorage.setItem(LS_BANK, JSON.stringify(state.bank)); } catch(e){ alert('בעיה בשמירה ל-localStorage. נסה חלון רגיל, לא גלישה פרטית.'); } }
+function save(){
+  localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
+}
 function savePlan(){
-  try{
-    localStorage.setItem(LS_PLAN, JSON.stringify(state.plan));
-    localStorage.setItem(LS_META, JSON.stringify({
-      title: byId('plan-title').value.trim(),
-      date: byId('plan-date').value,
-      group: byId('plan-group').value.trim(),
-      notes: byId('plan-notes').value.trim()
-    }));
-  }catch(e){ alert('לא הצלחתי לשמור את המערך. ודא שהדפדפן לא חוסם אחסון.'); }
+  localStorage.setItem(LS_PLAN, JSON.stringify(state.plan));
+  localStorage.setItem(LS_META, JSON.stringify({
+    title: byId('plan-title').value.trim(),
+    date: byId('plan-date').value,
+    group: byId('plan-group').value.trim(),
+    notes: byId('plan-notes').value.trim()
+  }));
 }
 
+// ===== עזר =====
 const byId = id => document.getElementById(id);
 const fmtGoals = g => g && g.length? g.map(x=>`<span class="pill">${x}</span>`).join(' ') : '';
 const unique = arr => [...new Set(arr)];
 
+// ===== UI: פילטרים =====
 function initFilters(){
   const cats = unique(state.bank.map(x=>x.category).filter(Boolean));
   const ages = unique(state.bank.map(x=>x.age).filter(Boolean));
@@ -354,6 +461,7 @@ function applyFilters(){
   byId('sum-bank').innerHTML = `${list.length} מתוך ${state.bank.length} תרגילים במאגר`;
 }
 
+// ===== UI: מאגר =====
 function renderBank(list){
   const root = byId('bank');
   root.innerHTML = '';
@@ -376,19 +484,37 @@ function renderBank(list){
   });
 }
 
-function addToPlan(id){ state.plan.push({id, note:''}); renderPlan(); savePlan(); }
-function removeFromPlan(idx){ state.plan.splice(idx,1); renderPlan(); savePlan(); }
-function move(idx,dir){
-  const j = idx+dir; if(j<0||j>=state.plan.length) return;
-  const t = state.plan[idx]; state.plan[idx]=state.plan[j]; state.plan[j]=t; renderPlan(); savePlan();
+// ===== UI: מערך =====
+function addToPlan(id){
+  state.plan.push({id, note:''});
+  renderPlan();
+  savePlan();
 }
-function planTotals(){ const byIdMap = Object.fromEntries(state.bank.map(x=>[x.id,x])); const total = state.plan.reduce((s,p)=> s + (byIdMap[p.id]?.duration||0), 0); return {count: state.plan.length, time: total}; }
+function removeFromPlan(idx){
+  state.plan.splice(idx,1);
+  renderPlan();
+  savePlan();
+}
+function move(idx,dir){
+  const j = idx+dir;
+  if(j<0||j>=state.plan.length) return;
+  const t = state.plan[idx];
+  state.plan[idx]=state.plan[j];
+  state.plan[j]=t;
+  renderPlan();
+  savePlan();
+}
+function planTotals(){
+  const byIdMap = Object.fromEntries(state.bank.map(x=>[x.id,x]));
+  const total = state.plan.reduce((s,p)=> s + (byIdMap[p.id]?.duration||0), 0);
+  return {count: state.plan.length, time: total};
+}
 function renderPlan(){
   const root = byId('plan');
   root.innerHTML = '';
   const map = Object.fromEntries(state.bank.map(x=>[x.id,x]));
   state.plan.forEach((p,idx)=>{
-    const d = map[p.id]; if(!d) return;
+    const d = map[p.id];
     const el = document.createElement('div');
     el.className='slot';
     el.innerHTML = `
@@ -418,6 +544,7 @@ function renderPlan(){
   byId('sum-count').textContent = `${count} תרגילים`;
   byId('sum-time').textContent = `${time} דק׳ סה"כ`;
 
+  // עדכון כותרת הדפסה
   const t = byId('plan-title').value.trim() || 'מערך אימון';
   const date = byId('plan-date').value; const group = byId('plan-group').value.trim();
   byId('plan-title-print').textContent = t;
@@ -425,10 +552,12 @@ function renderPlan(){
   byId('plan-meta-print').textContent = meta;
 }
 
+// ===== אירועים =====
 byId('f-cat').oninput = e=>{state.filters.cat=e.target.value; applyFilters()};
 byId('f-age').oninput = e=>{state.filters.age=e.target.value; applyFilters()};
 byId('f-dur').oninput = e=>{state.filters.dur=e.target.value; applyFilters()};
 byId('f-q').oninput = e=>{state.filters.q=e.target.value; applyFilters()};
+
 byId('btn-print').onclick = ()=> window.print();
 byId('btn-save').onclick = ()=> { savePlan(); toast('המערך נשמר בדפדפן ✔'); };
 byId('btn-reset-plan').onclick = ()=> { if(confirm('לנקות את המערך?')){ state.plan=[]; renderPlan(); savePlan(); }};
@@ -447,12 +576,34 @@ byId('btn-import').onclick = ()=>{
   };
   inp.click();
 };
-['plan-title','plan-date','plan-group','plan-notes'].forEach(id=>{ byId(id).addEventListener('input', ()=>{ savePlan(); renderPlan(); }); });
+
+['plan-title','plan-date','plan-group','plan-notes'].forEach(id=>{
+  byId(id).addEventListener('input', ()=>{ savePlan(); renderPlan(); });
+});
+
+// ===== טוסטים קטנים =====
 function toast(msg){
   const t = document.createElement('div');
   t.textContent = msg; t.style.cssText = 'position:fixed;inset-inline-start:50%;transform:translateX(-50%);bottom:18px;background:#0f1b30;border:1px solid #33415e;padding:10px 12px;border-radius:10px;z-index:9999';
   document.body.appendChild(t); setTimeout(()=>t.remove(), 1600);
 }
+
+// ===== אתחול =====
+// --- תפריט צד נשלף במובייל ---
+const mbtn = document.getElementById('btn-filter');
+if(mbtn){
+  const backdrop = document.createElement('div');
+  backdrop.id = 'backdrop';
+  document.body.appendChild(backdrop);
+  const closeBtn = document.getElementById('btn-close-sidebar');
+  const open = ()=> document.body.classList.add('sidebar-open');
+  const close = ()=> document.body.classList.remove('sidebar-open');
+  mbtn.onclick = open;
+  backdrop.onclick = close;
+  if(closeBtn) closeBtn.onclick = close;
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+}
+
 load(); initFilters(); applyFilters(); renderBank(state.bank); renderPlan();
 </script>
 </body>
