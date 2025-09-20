@@ -1,176 +1,109 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>בונה מערכי אימון – כדורסל</title>
   <style>
-    :root{--bg:#0e1726;--card:#131c2b;--ink:#eaf2ff;--muted:#9fb3d1;--accent:#5eead4;--good:#86efac;--bad:#fca5a5}
+    :root{
+      --bg:#0e1726;--card:#131c2b;--ink:#eaf2ff;--muted:#9fb3d1;--good:#86efac;--bad:#fca5a5;
+      --border:#263047
+    }
     html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg);color:var(--ink)}
-    a{color:inherit}
-    .app{display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:100%}
-    header{grid-column:1/-1;background:#0b1220;position:sticky;top:0;z-index:5;border-block-end:1px solid #263047}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--ink)}
+    .app{display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:100%;max-inline-size:1280px;margin-inline:auto;padding-inline:8px}
+    header{grid-column:1/-1;background:#0b1220;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
     header .row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px}
-    header h1{font-size:20px;margin:0;font-weight:700}
-    header small{color:var(--muted)}
     .col{padding:16px}
-    .card{background:var(--card);border:1px solid #263047;border-radius:14px;padding:12px}
-    .card h3{margin:0 0 10px 0;font-size:15px;color:var(--ink)}
-    .muted{color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}
+    .muted{color:var(--muted)} .small{font-size:12px}
     input,select,textarea,button{font:inherit;color:inherit}
     input,select,textarea{background:#0b1220;border:1px solid #27324b;border-radius:10px;padding:8px;inline-size:100%}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{background:#1a2440;border:1px solid #2a3553;border-radius:10px;padding:8px 12px;cursor:pointer}
-    .btn.primary{background:#1b3a35;border-color:#1f5046;box-shadow:0 0 0 1px #255e52 inset}
+    .btn{background:#1a2440;border:1px solid #2a3553;border-radius:10px;padding:8px 12px;cursor:pointer;min-height:40px}
+    .btn.primary{background:#1b3a35;border-color:#1f5046}
     .btn.good{background:#12341e;border-color:#1a4e2b;color:var(--good)}
     .btn.bad{background:#3a1b1b;border-color:#512020;color:var(--bad)}
-    .grid{display:grid;grid-template-columns:1fr;gap:10px}
-    .row{display:flex;gap:8px;align-items:center}
-    .pill{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;background:#0f1b30;border:1px solid #263047;color:var(--muted);font-size:12px}
     .list{display:grid;gap:8px}
     .item{padding:10px;border:1px solid #2a3553;border-radius:12px;background:#0f1b30}
     .item h4{margin:0 0 6px 0;font-size:14px}
     .item p{margin:0;color:var(--muted);font-size:13px}
-    .item .row{justify-content:space-between}
-    .spacer{block-size:8px}
-    .plan{display:grid;gap:10px}
-    .plan .slot{background:#0f1b30;border:1px dashed #33415e;border-radius:12px;padding:10px}
-    .plan .slot h4{margin:0 0 6px 0}
-    .plan .slot .controls{display:flex;gap:6px;flex-wrap:wrap}
-    .sum{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center}
     .row.wrap{flex-wrap:wrap}
-    .flex{display:flex;gap:8px}
-    .grow{flex:1}
-    .space{inline-size:8px}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;background:#0f1b30;border:1px solid var(--border);color:var(--muted);font-size:12px}
+    .plan{display:grid;gap:10px}
+    .slot{background:#0f1b30;border:1px dashed #33415e;border-radius:12px;padding:10px}
+    .hr{border-top:1px solid #33415e;margin:8px 0}
     .sticky{position:sticky;top:76px}
+    .only-mobile{display:none}
 
-    /* הדפסה ל-PDF */
+    /* טאבלט: 2 טורים – סינון בצד, מאגר לידו */
+    @media (min-width:900px) and (max-width:1199px){
+      .app{grid-template-columns:260px 1fr}
+      .col.left{display:contents;padding:0}
+      .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
+      .col.left > #bank-card{grid-column:2}
+    }
+    /* דסקטופ רחב: 3 טורים – סינון | מאגר | מערך */
+    @media (min-width:1200px){
+      .app{grid-template-columns:260px 1fr 1fr}
+      .col.left{display:contents;padding:0}
+      .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
+      .col.left > #bank-card{grid-column:2}
+      .app > .col:not(.left){grid-column:3}
+    }
+    /* מובייל: סינון כ-מגירה נשלפת, מאגר נשאר במסך הראשי */
+    @media (max-width:899px){
+      .only-mobile{display:inline-flex}
+      .app{grid-template-columns:1fr;gap:12px}
+      .sticky{position:static}
+      .col{padding:12px}
+      .col.left{position:fixed;top:0;bottom:0;inset-inline-start:0;inline-size:min(86vw,360px);background:#0b1220;border-inline-end:1px solid var(--border);padding:16px;transform:translateX(-100%);transition:transform .2s ease;z-index:60;overflow:auto}
+      body.sidebar-open .col.left{transform:translateX(0)}
+      #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+      body.sidebar-open #backdrop{opacity:1;pointer-events:auto}
+    }
+    /* הדפסה */
     @media print{
       header,.col.left{display:none}
       .app{grid-template-columns:1fr}
       body{background:white;color:black}
       .card{border:none}
       .slot{break-inside:avoid}
-      .print-header{display:block}
-      .not-print{display:none}
     }
-    .print-header{display:none;margin-block-end:12px}
-    .print-header h2{margin:0}
-    .hr{border-block-start:1px solid #33415e;margin:8px 0}
-    .small{font-size:12px}
-    
-  /* ===== התאמה לכל המסכים (מוביל/טאבלט/מחשב) ===== */
-  .app{max-inline-size:1280px;margin-inline:auto;padding-inline:8px}
-  .btn{min-height:40px}
-
-  /* דסקטופ רחב → טאבלט */
-  @media (max-width:1200px){
-    .app{grid-template-columns:280px 1fr}
-  }
-  
-  /* טאבלט → מובייל */
-  @media (max-width:900px){
-    .app{grid-template-columns:1fr;gap:12px}
-    .sticky{position:static}
-    .col{padding:12px}
-    header .row{flex-wrap:wrap}
-    header .toolbar{width:100%;padding-top:6px}
-    header .toolbar .btn{flex:1}
-  }
-
-  /* מובייל קטן */
-  @media (max-width:600px){
-    body{font-size:16px}
-    .card{padding:10px;border-radius:12px}
-    .btn{min-height:44px;padding:12px 14px}
-    .row.wrap input,.row.wrap select{flex:1 1 48%}
-    input,select,textarea{font-size:16px} /* מונע זום אוטומטי ב-iOS */
-  }
-  
-  /* --- פריסת תפריט צד: סינון משמאל, מאגר באמצע, מערך מימין (דסקטופ) --- */
-  @media (min-width:1200px){
-    .app{grid-template-columns:260px 1fr 1fr}
-    /* הופכים את העמודה השמאלית ל"שקופה" כדי שהכרטיסים יהפכו לאייטמים של הגריד הראשי */
-    .col.left{display:contents;padding:0}
-    /* כרטיס הסינון (sticky) נשאר בעמודה 1, המאגר עובר לעמודה 2 */
-    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
-    .col.left > .spacer{display:none}
-    .col.left > #bank-card{grid-column:2}
-    /* שיפור מרווחים בעמודה הימנית (המערך) */
-    .app > .col:not(.left){padding:16px}
-  }
-
-  /* ===== רספונסיביות מלאה לכל מסך/מצב ===== */
-  .only-mobile{display:none}
-
-  /* טאבלט: 2 טורים – סינון כ-sidebar שמאלה, מאגר לידו, המערך בעמודה הימנית */
-  @media (min-width:900px) and (max-width:1199px){
-    .app{grid-template-columns:260px 1fr}
-    .col.left{display:contents;padding:0}
-    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
-    .col.left > #bank-card{grid-column:2}
-    .app > .col:not(.left){grid-column:2}
-  }
-  /* דסקטופ רחב: 3 טורים – סינון | מאגר | מערך */
-  @media (min-width:1200px){
-    .app{grid-template-columns:260px 1fr 1fr}
-    .col.left{display:contents;padding:0}
-    .col.left > .card.sticky{grid-column:1;align-self:start;position:sticky;top:76px}
-    .col.left > .spacer{display:none}
-    .col.left > #bank-card{grid-column:2}
-    .app > .col:not(.left){grid-column:3}
-  }
-  /* מובייל: מגירה נשלפת (off‑canvas) לסינון + מאגר */
-  @media (max-width:900px){
-    .only-mobile{display:inline-flex}
-    .app{grid-template-columns:1fr;gap:12px}
-    .sticky{position:static}
-    .col{padding:12px}
-    header .row{flex-wrap:wrap}
-    header .toolbar{width:100%;padding-top:6px}
-    header .toolbar .btn{flex:1}
-    .col.left{position:fixed;top:0;bottom:0;inset-inline-start:0;inline-size:min(86vw,360px);background:#0b1220;border-inline-end:1px solid #263047;padding:16px;transform:translateX(-100%);transition:transform .2s ease;z-index:60;overflow:auto}
-    body.sidebar-open .col.left{transform:translateX(0)}
-    #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
-    body.sidebar-open #backdrop{opacity:1;pointer-events:auto}
-  }
-</style>
+  </style>
 </head>
 <body>
   <div class="app">
     <header>
       <div class="row">
         <div>
-          <h1>בונה מערכי אימון – כדורסל</h1>
-          <small class="muted">בחר תרגילים ← הוסף למערך → הדפס ל‑PDF</small>
+          <h1 style="margin:0;font-size:20px">בונה מערכי אימון – כדורסל</h1>
+          <small class="muted">בחר תרגילים ← הוסף למערך → הדפס ל-PDF</small>
         </div>
-        <div class="toolbar not-print">
+        <div class="toolbar">
           <button class="btn only-mobile" id="btn-filter">סינון</button>
           <button class="btn" id="btn-import">ייבוא מאגר</button>
           <button class="btn" id="btn-export">ייצוא מאגר</button>
-          <button class="btn" id="btn-clear">איפוס</button>
-          <button class="btn primary" id="btn-print">הדפס/שמירה כ‑PDF</button>
+          <button class="btn" id="btn-clear-all">איפוס</button>
+          <button class="btn primary" id="btn-print">הדפס/שמירה כ-PDF</button>
         </div>
       </div>
     </header>
 
-    <!-- צד שמאל: מאגר תרגילים וסינון -->
+    <!-- סיידבר סינון -->
     <div class="col left">
       <div class="row only-mobile" style="justify-content:space-between;margin-bottom:8px">
         <strong>סינון</strong>
         <button class="btn" id="btn-close-sidebar">סגור ✕</button>
       </div>
+
       <div class="card sticky">
-        <h3>סינון</h3>
+        <h3 style="margin:0 0 10px">סינון</h3>
         <div class="grid">
           <div class="row wrap">
-            <select id="f-cat" title="קטגוריה">
-              <option value="">קטגוריה</option>
-            </select>
-            <select id="f-age" title="שכבת גיל">
-              <option value="">שכבת גיל</option>
-            </select>
+            <select id="f-cat" title="קטגוריה"><option value="">קטגוריה</option></select>
+            <select id="f-age" title="שכבת גיל"><option value="">שכבת גיל</option></select>
             <select id="f-dur" title="משך">
               <option value="">משך (דק׳)</option>
               <option value="10">≤ 10</option>
@@ -179,536 +112,10 @@
               <option value="30">≤ 30</option>
             </select>
           </div>
-          <input id="f-q" placeholder="חיפוש חופשי (שם/מטרה/ציוד)" />
+          <input id="f-q" placeholder="חיפוש חופשי (שם/מטרה/ציוד)"/>
         </div>
-        <div class="toolbar not-print" style="margin-top:8px">
+        <div class="toolbar" style="margin-top:8px">
           <button class="btn" id="btn-clear-filters">נקה סינון</button>
           <button class="btn" id="btn-restore-seed">שחזר מאגר</button>
         </div>
         <div class="hr"></div>
-        <div class="sum small" id="sum-bank"></div>
-      </div>
-
-      <div class="spacer"></div>
-      <div class="card" id="bank-card"><h3>מאגר תרגילים</h3>
-        <div id="bank" class="list" aria-live="polite"></div>
-      </div>
-    </div>
-
-    <!-- צד ימין: בניית המערך -->
-    <div class="col">
-      <div class="card">
-        <div class="print-header">
-          <h2 id="plan-title-print">מערך אימון</h2>
-          <div class="small" id="plan-meta-print"></div>
-        </div>
-        <div class="row wrap not-print">
-          <input id="plan-title" class="grow" placeholder="שם המערך (למשל: קטסל ב׳ – יסודות כדרור)" />
-          <input id="plan-date" type="date" />
-          <input id="plan-group" placeholder="קבוצה/שכבת גיל" />
-        </div>
-        <div class="hr not-print"></div>
-
-        <div class="row sum">
-          <span id="sum-count" class="pill">0 תרגילים</span>
-          <span id="sum-time" class="pill">0 דק׳ סה"כ</span>
-        </div>
-
-        <div id="plan" class="plan" aria-live="polite"></div>
-
-        <div class="spacer"></div>
-        <div class="grid">
-          <textarea id="plan-notes" rows="4" placeholder="הערות למאמן: דגשים, חלוקה לתחנות, וריאציות…"></textarea>
-        </div>
-        <div class="row not-print" style="justify-content:space-between;margin-top:8px">
-          <div class="small muted">טיפ: לגרור למעלה/למטה? השתמש בכפתורי ↑↓
-          · שמירת PDF דרך המדפסת של הדפדפן.</div>
-          <div class="toolbar">
-            <button class="btn good" id="btn-save">שמירת מערך בדפדפן</button>
-            <button class="btn bad" id="btn-reset-plan">ניקוי מערך</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<script>
-// ===== נתוני דוגמה =====
-const seed = [
-  {id:"D1", title:"חימום דינמי – קווים", category:"חימום", age:"קטסל", duration:10,
-   equipment:"קונוס לכל שחקן", goals:["עלייה דופק","קואורדינציה"],
-   description:"ריצה קלה בין הקווים, סגירות-פתיחות, דילוגים, ברכיים גבוהות, עקבים לישבן.",
-   coaching:["טווח תנועה מלא","נשימה","שליטה בקו"]},
-  {id:"D2", title:"כדרור יד חזק/חלשה בתחנות", category:"כדרור", age:"קטסל", duration:12,
-   equipment:"כדור לכל שחקן, קונוסים", goals:["שליטה","שתי ידיים"],
-   description:"4 תחנות: ביד חזקה, ביד חלשה, שינויי כיוון, כדרור הגנה.",
-   coaching:["גובה כדרור","מבט למעלה","עצירה נשלטת"]},
-  {id:"D3", title:"מסירות בתנועה – זוגות", category:"מסירה", age:"ילדים", duration:10,
-   equipment:"כדור לכל זוג", goals:["תזמון","מסירה מדויקת"],
-   description:"זוגות רצים לרוחב ומוסרים תוך הצטרפות לקו התקפה.",
-   coaching:["כף יד מאחורי הכדור","צעד עצירה לפני מסירה"]},
-  {id:"D4", title:"סיום בליי-אפ מצד ימין/שמאל", category:"סיום", age:"ילדים", duration:15,
-   equipment:"כדור לכל שחקן", goals:["צעד וחצי","סיום מרוכז"],
-   description:"טורים לשני הצדדים, דגש על ספירה: כדרור – צעד – צעד – עליה.",
-   coaching:["פוקוס על קרש","שימוש ביד שמאל"]},
-  {id:"D5", title:"2 על 1 במתפרצת", category:"יתרון מספרי", age:"ילדים", duration:12,
-   equipment:"", goals:["קבלת החלטות","מסירה מוקדמת"],
-   description:"יציאה משלושה, שחקן אמצע מול שני תוקפים.",
-   coaching:["מסירה לשטח פנוי","ריווח"]},
-  {id:"D6", title:"3 על 3 חצי מגרש – כללים", category:"קבוצתי", age:"נערים", duration:18,
-   equipment:"", goals:["Spacing","קריאה של משחק"],
-   description:"3x3 עם חוקים: מסירה ראשונה ל-wings, חתיכות backdoor.",
-   coaching:["תנועת כדור לפני כדרור","תקשורת"]},
-  {id:"D7", title:"קליעה לאחר עצירה", category:"קליעה", age:"נערים", duration:12,
-   equipment:"", goals:["Stop & Pop","איזון"],
-   description:"קבלת מסירה, עצירת jump stop או stride, עלייה לקליעה.",
-   coaching:["מרכז כובד נמוך","follow-through"]},
-
-  /* ===== התקפה אזורית ===== */
-  {id:"D8", title:"התקפת 2-3 – Hi-Low לפוסט", category:"התקפה אזורית", age:"ילדים", duration:12,
-   equipment:"", goals:["הזנת פוסט","Reversal"],
-   description:"שתי תחנות: (1) מסירה לצד חלש ו-Hi-Low בין פוסט גבוה לנמוך; (2) הטעיית עין + מסירת לוב.",
-   coaching:["סבלנות לפני הכנסה","זוויות מסירה","Sealing"]},
-  {id:"D9", title:"התקפת 2-3 – Short Corner", category:"התקפה אזורית", age:"ילדים", duration:12,
-   equipment:"", goals:["פיצול אזור","קליעה קצרה"],
-   description:"כניסה ל-Short Corner אחרי Reversal; קריאה: זריקה, מסירה לפוסט, או Skip.",
-   coaching:["קלות החלטה בשלוש אפשרויות","תפיסת כדור נמוכה"]},
-  {id:"D10", title:"התקפת 3-2 – Overload ל-Wing", category:"התקפה אזורית", age:"נערים", duration:12,
-   equipment:"", goals:["יצירת יתרון במספר","ריווח צד חזק"],
-   description:"Stack של שני שחקנים ל-Wing ו-cut ל-Baseline; קריאה מול העלאת שומר.",
-   coaching:["תזמון ה-cut","שינוי זווית מסירה"]},
-  {id:"D11", title:"התקפת 1-3-1 – Flash לפוסט גבוה", category:"התקפה אזורית", age:"נערים", duration:12,
-   equipment:"", goals:["פוסט גבוה כציר","Kick Out"],
-   description:"הבאת הכדור לפוסט גבוה אחרי Reversal; Split cut מסביבו לזריקה/חדירה.",
-   coaching:["קליטת כדור בסיבוב","פיווט פתוח"]},
-  {id:"D12", title:"Zone Skip & Seal", category:"התקפה אזורית", age:"נערים", duration:10,
-   equipment:"", goals:["סקיפ לצד חלש","Seal לפני הכנסה"],
-   description:"כדור עובר צד → Skip → פוסט נמוך ננעל לפני הכנסה.",
-   coaching:["סקן לפני מסירה","מסירת קשת גבוהה"]},
-  {id:"D13", title:"Zone Ball Reversal + Post Seal", category:"התקפה אזורית", age:"ילדים", duration:12,
-   equipment:"", goals:["הזזת אזור","הכנסה לפוסט"],
-   description:"3-0: העברת צד מהירה וסגירת שומר ע"י הפוסט; מעבר ל-3x3 נגד אזור מדומה.",
-   coaching:["תזמון Seal אחרי Reversal","פנים לסל בקבלה"]},
-  {id:"D14", title:"חדירה ו-Kick מול אזור", category:"התקפה אזורית", age:"נערים", duration:10,
-   equipment:"", goals:["פיצול קו שני","קליעה חופשית"],
-   description:"חדירת פריצה מרווחת (Gap) ו-Kick ל-corners/wings; המשך רוטציות.",
-   coaching:["חדירה בשליטה","עצירה לפני עומס"]},
-
-  /* ===== יתרון מספרי ===== */
-  {id:"D15", title:"2 על 1 רציף – מסירה מוקדמת", category:"יתרון מספרי", age:"קטסל", duration:8,
-   equipment:"", goals:["Head Up","מסירה מוקדמת"],
-   description:"שני תוקפים מול מגן; סיום ב-layup או מסירת עודף.",
-   coaching:["החלטה בשני כדרורים","מסירה לפני מגע"]},
-  {id:"D16", title:"3 על 2 → 2 על 1 חזרה", category:"יתרון מספרי", age:"ילדים", duration:12,
-   equipment:"", goals:["סבב מתפרצת","תקשורת"],
-   description:"רציף הלוך-חזור: 3v2 לצד אחד, חזרה 2v1 לצד שני.",
-   coaching:["מיקום שחקן אמצע","מגרש רחב"]},
-  {id:"D17", title:"4 על 3 רציף", category:"יתרון מספרי", age:"נערים", duration:10,
-   equipment:"", goals:["Extra Pass","סבלנות"],
-   description:"4v3 חצי מגרש עם שעון 12 שנ׳ – חובה מסירת Extra לפני זריקה.",
-   coaching:["נגיעה-נגיעה","Skip בזמן לחץ"]},
-  {id:"D18", title:"Advantage Start – קלוז-אאוט מאוחר 3 על 2", category:"יתרון מספרי", age:"נערים", duration:12,
-   equipment:"", goals:["ניצול יתרון","קריאת קלוז-אאוט"],
-   description:"מאמן משהה את היציאה של מגן ל-קלוז-אאוט, התוקפים קוראים ומענישים.",
-   coaching:["חדירה לצד חלש","מסירה לפינה"]},
-  {id:"D19", title:"Numbers Game 1–4 נגד 2–3", category:"יתרון מספרי", age:"ילדים", duration:10,
-   equipment:"", goals:["קבלת החלטות","מעבר מהיר"],
-   description:"מאמן קורא מספרים – מספר התוקפים/מגנים נקבעים מידית.",
-   coaching:["זיהוי יתרון","פתיחת קווי מסירה"]},
-  {id:"D20", title:"2 על 1 – מסגרת 5 שניות", category:"יתרון מספרי", age:"קטסל", duration:8,
-   equipment:"", goals:["מהירות מחשבה","סיום"],
-   description:"שעון 5 שנ׳ לקבלת החלטה; נקודות בונוס על layup מהיר.",
-   coaching:["קו למסירה","סלטה בין קווי ריצה"]},
-
-  /* ===== שליטה בכדור (כדורי טניס) ===== */
-  {id:"D21", title:"כדרור + טניס: זרוק-תפוס ביד חלשה", category:"שליטה בכדור (כדורי טניס)", age:"קטסל", duration:8,
-   equipment:"כדור סל + כדור טניס לכל שחקן", goals:["קואורדינציה","ראש למעלה"],
-   description:"כדרור ביד חזקה תוך זריקה ותפיסת כדור טניס ביד החלשה.",
-   coaching:["כדרור נמוך נשלט","אל תסתכל על הכדור"]},
-  {id:"D22", title:"שני כדורי סל + טניס תגובה", category:"שליטה בכדור (כדורי טניס)", age:"נערים", duration:10,
-   equipment:"2 כדורי סל + טניס לזוג", goals:["רב-משימתי","תגובה"],
-   description:"שחקן מכדרר שני כדורים, בן זוג זורק טניס לסירוגין – תפיסה/החזרה.",
-   coaching:["קצב אחיד","ברכיים כפופות"]},
-  {id:"D23", title:"כדרור + טניס עם שינויי כיוון", category:"שליטה בכדור (כדורי טניס)", age:"ילדים", duration:8,
-   equipment:"כדור סל + טניס", goals:["שליטה תחת לחץ","שינויי מהירות"],
-   description:"על אות המאמן – change of direction תוך שמירה על שליטה בטניס.",
-   coaching:["כתפיים קדימה","הגנת כדור בגוף"]},
-  {id:"D24", title:"ראש למעלה – טניס מהמאמן", category:"שליטה בכדור (כדורי טניס)", age:"ילדים", duration:10,
-   equipment:"כדורי טניס למאמן", goals:["ראיית משחק","קבלת החלטות"],
-   description:"מאמן זורק טניס לאזורים שונים; השחקנים מכדררים ומוסרים טניס ביד החלשה.",
-   coaching:["קריאה מוקדמת","שחרור מהיר"]},
-  {id:"D25", title:"Hand-Eye Ladder עם טניס", category:"שליטה בכדור (כדורי טניס)", age:"קטסל", duration:8,
-   equipment:"סולם זריזות + טניס", goals:["קואורדינציה","רגליים מהירות"],
-   description:"דגמי צעדים בסולם תוך זריקה-תפיסה של טניס; שליטה בגוף ובעיניים.",
-   coaching:["מרכז גוף נמוך","נשימה בקצב"]},
-
-  /* ===== אחד על אחד ===== */
-  {id:"D26", title:"1 על 1 – שלושה כדרורים", category:"אחד על אחד", age:"ילדים", duration:8,
-   equipment:"", goals:["יעילות","פיניש"],
-   description:"מותר עד 3 כדרורים; ניקוד בונוס על סיום מהיר ובלי חזרה.",
-   coaching:["התקפה קווית","עצירה חזקה"]},
-  {id:"D27", title:"1 על 1 מקלוז-אאוט", category:"אחד על אחד", age:"נערים", duration:10,
-   equipment:"", goals:["קריאת קלוז-אאוט","First Step"],
-   description:"שחקן מגן יוצא לקלוז-אאוט; התוקף קורא זווית ויוצא מיד.",
-   coaching:["פאמפ פייק חכם","חדירה לצד חלש"]},
-  {id:"D28", title:"1 על 1 מאגפים (Wing/Elbow)", category:"אחד על אחד", age:"נערים", duration:10,
-   equipment:"", goals:["טווחי יציאה","Body Bump"],
-   description:"פתיחה משתי עמדות; הגבלת זמן 6 שנ׳ להתקפה.",
-   coaching:["שמירת קו כתף-כתף","סיום דרך הגוף"]},
-  {id:"D29", title:"1 על 1 גב לסל – שתי נגיעות", category:"אחד על אחד", age:"ילדים", duration:10,
-   equipment:"", goals:["פוסט אפ","פיווט"],
-   description:"מותר שתי נגיעות כדור לפני סיום; דגש על פיווט ו-seal.",
-   coaching:["אל תוריד את הכדור נמוך","פיווט פתוח/סגור"]},
-  {id:"D30", title:"1 על 1 רציף – מנצח נשאר", category:"אחד על אחד", age:"נערים", duration:12,
-   equipment:"", goals:["תחרותיות","סיבולת"]},
-  {id:"D31", title:"1 על 1 עם יתרון חצי צעד", category:"אחד על אחד", age:"ילדים", duration:8,
-   equipment:"", goals:["ניצול יתרון","First Step"],
-   description:"התוקף מקבל יציאה מוקדמת של חצי צעד; המגן יוצא מדיליי.",
-   coaching:["הטיית כתף","סיום דרך הקרש"]},
-
-  /* ===== Pass & Cut ===== */
-  {id:"D32", title:"Give & Go בסיסי", category:"Pass & Cut", age:"קטסל", duration:10,
-   equipment:"כדור לכל זוג", goals:["מסירה","תנועה ללא כדור"],
-   description:"זוגות: מסירה ל-Top → חתוך לסל → חזרה למקומות.",
-   coaching:["עין לכדור ועין לשטח","ידיים מוכנות"]},
-  {id:"D33", title:"Pass-Cut-Fill בשלשות", category:"Pass & Cut", age:"ילדים", duration:10,
-   equipment:"3 עמדות מסומנות", goals:["תזמון","מילוי פינות"],
-   description:"שלישייה: Pass → Cut → Fill; אחרי 5 מחזורים מעבר ל-3x3 קל.",
-   coaching:["אל תרדוף אחרי הכדור","Spacing קבוע"]},
-  {id:"D34", title:"Corner Fill + Backdoor", category:"Pass & Cut", age:"נערים", duration:12,
-   equipment:"", goals:["Backdoor","קריאה מול דחיפה"],
-   description:"מסירה ל-Wing → מילוי פינה → דחיפה של המגן גוררת Backdoor.",
-   coaching:["קריאה לפי over/under","מסירה בזמן"]},
-  {id:"D35", title:"Split Cut מהפוסט", category:"Pass & Cut", age:"נערים", duration:12,
-   equipment:"", goals:["שיתוף פעולה","חיתוכים"],
-   description:"כדור נכנס לפוסט; שני שחקנים עושים Split סביבו ומחפשים יתרון.",
-   coaching:["גע-ולך","מסירה חדה לקלע"]},
-  {id:"D36", title:"3x0 ל-3x3 Pass & Cut", category:"Pass & Cut", age:"נערים", duration:15,
-   equipment:"", goals:["העברת עקרון למשחק","קבלת החלטות"],
-   description:"בניית דפוס 3x0 ואז מעבר ל-3x3 עם ניקוד על חיתוך יעיל.",
-   coaching:["ריווח לפני כדרור","מסירה מוקדמת"]}
-];
-
-// ===== מצב אפליקציה =====
-const state = {
-  bank: [],
-  plan: [], // [{id, customNote}]
-  filters: {cat:"", age:"", dur:"", q:""}
-};
-
-// ===== אחסון מקומי =====
-const LS_BANK = 'bb_bank_v1';
-const LS_PLAN = 'bb_plan_v1';
-const LS_META = 'bb_meta_v1';
-
-function load(){
-  try{
-    // נטען מאגר מהדפדפן בצורה סלחנית; אם ריק/שבור → seed
-    let bankLS = null;
-    try{ bankLS = JSON.parse(localStorage.getItem(LS_BANK) || 'null'); }catch(_){ bankLS = null; }
-    const mergeById = (a,b)=>{ const map=new Map(); (b||[]).forEach(x=>x&&x.id&&map.set(x.id,x)); (a||[]).forEach(x=>x&&x.id&&map.set(x.id,x)); return [...map.values()]; };
-    const useSeed = !Array.isArray(bankLS) || bankLS.length===0;
-    state.bank = useSeed ? seed.slice() : mergeById(bankLS, seed);
-
-    // טען מערך/מטא בבטחה
-    let plan=null, meta=null;
-    try{ plan = JSON.parse(localStorage.getItem(LS_PLAN) || '[]'); }catch(_){ plan=[]; }
-    state.plan = Array.isArray(plan)? plan : [];
-    try{ meta = JSON.parse(localStorage.getItem(LS_META) || '{}'); }catch(_){ meta={}; }
-    byId('plan-title').value = (meta&&meta.title)||'';
-    byId('plan-date').value = (meta&&meta.date)||'';
-    byId('plan-group').value = (meta&&meta.group)||'';
-    byId('plan-notes').value = (meta&&meta.notes)||'';
-
-    localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
-  }catch(err){
-    const b = document.getElementById('errbox');
-    b.style.display='block';
-    b.textContent = 'Storage Error:
-' + (err && err.message ? err.message : err);
-  }
-};
-  const bank = bankLS ? mergeById(bankLS, seed) : seed;
-  state.bank = bank;
-
-  const plan = JSON.parse(localStorage.getItem(LS_PLAN) || '[]');
-  state.plan = plan;
-  const meta = JSON.parse(localStorage.getItem(LS_META) || '{}');
-  if(meta.title) byId('plan-title').value = meta.title;
-  if(meta.date) byId('plan-date').value = meta.date;
-  if(meta.group) byId('plan-group').value = meta.group;
-  if(meta.notes) byId('plan-notes').value = meta.notes;
-
-  // שמירה חזרה כדי לייצב את המאגר הממוזג
-  localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
-}');
-  if(meta.title) byId('plan-title').value = meta.title;
-  if(meta.date) byId('plan-date').value = meta.date;
-  if(meta.group) byId('plan-group').value = meta.group;
-  if(meta.notes) byId('plan-notes').value = meta.notes;
-}
-
-function save(){
-  localStorage.setItem(LS_BANK, JSON.stringify(state.bank));
-}
-function savePlan(){
-  localStorage.setItem(LS_PLAN, JSON.stringify(state.plan));
-  localStorage.setItem(LS_META, JSON.stringify({
-    title: byId('plan-title').value.trim(),
-    date: byId('plan-date').value,
-    group: byId('plan-group').value.trim(),
-    notes: byId('plan-notes').value.trim()
-  }));
-}
-
-// ===== עזר =====
-const byId = id => document.getElementById(id);
-const fmtGoals = g => g && g.length? g.map(x=>`<span class="pill">${x}</span>`).join(' ') : '';
-const unique = arr => [...new Set(arr)];
-
-// ===== UI: פילטרים =====
-function initFilters(){
-  const cats = unique(state.bank.map(x=>x.category).filter(Boolean));
-  const ages = unique(state.bank.map(x=>x.age).filter(Boolean));
-  byId('f-cat').innerHTML = '<option value="">קטגוריה</option>' + cats.map(c=>`<option>${c}</option>`).join('');
-  byId('f-age').innerHTML = '<option value="">שכבת גיל</option>' + ages.map(a=>`<option>${a}</option>`).join('');
-}
-
-function applyFilters(){
-  const {cat,age,dur,q} = state.filters;
-  const Q = (q||'').toLowerCase();
-  const list = state.bank.filter(d => (
-    (!cat || d.category===cat) &&
-    (!age || d.age===age) &&
-    (!dur || +d.duration <= +dur) &&
-    (!Q || (d.title+d.description+d.equipment+(d.goals||[]).join(',')).toLowerCase().includes(Q))
-  ));
-  renderBank(list);
-  byId('sum-bank').innerHTML = `${list.length} מתוך ${state.bank.length} תרגילים במאגר`;
-}
-
-// ===== UI: מאגר =====
-function renderBank(list){
-  const root = byId('bank');
-  root.innerHTML = '';
-  if(!list || list.length===0){
-    root.innerHTML = `
-      <div class="item">
-        <p class="muted">לא נמצאו תרגילים לפי הסינון הנוכחי.</p>
-        <div class="toolbar">
-          <button class="btn" id="btn-empty-clear">נקה סינון</button>
-          <button class="btn" id="btn-empty-restore">שחזר מאגר</button>
-        </div>
-      </div>`;
-    const clear = ()=>{ state.filters={cat:'',age:'',dur:'',q:''}; byId('f-cat').value=''; byId('f-age').value=''; byId('f-dur').value=''; byId('f-q').value=''; applyFilters(); };
-    const restore = ()=>{ if(confirm('לשחזר את מאגר ברירת המחדל?')){ localStorage.removeItem(LS_BANK); state.bank=seed.slice(); save(); initFilters(); applyFilters(); toast('המאגר שוחזר ✔'); } };
-    const c1 = document.getElementById('btn-empty-clear'); if(c1) c1.onclick = clear;
-    const r1 = document.getElementById('btn-empty-restore'); if(r1) r1.onclick = restore;
-    return;
-  }
-  list.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `
-      <div class="row">
-        <div>
-          <h4>${d.title}</h4>
-          <div class="muted small">${d.category || ''} · ${d.age || ''} · ${d.duration} דק׳</div>
-        </div>
-        <button class="btn" aria-label="הוסף למערך">הוסף</button>
-      </div>
-      <p>${d.description || ''}</p>
-      <div class="row wrap small">${fmtGoals(d.goals)}${d.equipment?`<span class="pill">ציוד: ${d.equipment}</span>`:''}</div>
-    `;
-    el.querySelector('button').onclick = ()=> addToPlan(d.id);
-    root.appendChild(el);
-  });
-}</h4>
-          <div class="muted small">${d.category || ''} · ${d.age || ''} · ${d.duration} דק׳</div>
-        </div>
-        <button class="btn" aria-label="הוסף למערך">הוסף</button>
-      </div>
-      <p>${d.description || ''}</p>
-      <div class="row wrap small">${fmtGoals(d.goals)}${d.equipment?`<span class="pill">ציוד: ${d.equipment}</span>`:''}</div>
-    `;
-    el.querySelector('button').onclick = ()=> addToPlan(d.id);
-    root.appendChild(el);
-  });
-}
-
-// ===== UI: מערך =====
-function addToPlan(id){
-  state.plan.push({id, note:''});
-  renderPlan();
-  savePlan();
-}
-function removeFromPlan(idx){
-  state.plan.splice(idx,1);
-  renderPlan();
-  savePlan();
-}
-function move(idx,dir){
-  const j = idx+dir;
-  if(j<0||j>=state.plan.length) return;
-  const t = state.plan[idx];
-  state.plan[idx]=state.plan[j];
-  state.plan[j]=t;
-  renderPlan();
-  savePlan();
-}
-function planTotals(){
-  const byIdMap = Object.fromEntries(state.bank.map(x=>[x.id,x]));
-  const total = state.plan.reduce((s,p)=> s + (byIdMap[p.id]?.duration||0), 0);
-  return {count: state.plan.length, time: total};
-}
-function renderPlan(){
-  const root = byId('plan');
-  root.innerHTML = '';
-  const map = Object.fromEntries(state.bank.map(x=>[x.id,x]));
-  state.plan.forEach((p,idx)=>{
-    const d = map[p.id];
-    const el = document.createElement('div');
-    el.className='slot';
-    el.innerHTML = `
-      <div class="row" style="justify-content:space-between">
-        <div class="row wrap">
-          <h4>${idx+1}. ${d.title}</h4>
-          <span class="pill">${d.duration} דק׳</span>
-          ${d.category?`<span class="pill">${d.category}</span>`:''}
-          ${d.age?`<span class="pill">${d.age}</span>`:''}
-        </div>
-        <div class="controls not-print">
-          <button class="btn" title="למעלה" aria-label="הזז למעלה" onclick="move(${idx},-1)">↑</button>
-          <button class="btn" title="למטה" aria-label="הזז למטה" onclick="move(${idx},1)">↓</button>
-          <button class="btn bad" title="הסר" aria-label="הסר תרגיל" onclick="removeFromPlan(${idx})">הסר</button>
-        </div>
-      </div>
-      <div class="muted small">מטרות: ${(d.goals||[]).join(' · ')} ${d.equipment?` · ציוד: ${d.equipment}`:''}</div>
-      <p>${d.description||''}</p>
-      ${d.coaching && d.coaching.length? `<div class="small"><strong>דגשים למאמן:</strong> ${d.coaching.join(' · ')}</div>`:''}
-      <div class="row not-print" style="margin-top:6px">
-        <textarea rows="2" placeholder="הערה אישית לתרגיל (אופציונלי)" oninput="state.plan[${idx}].note=this.value; savePlan()">${p.note||''}</textarea>
-      </div>
-    `;
-    root.appendChild(el);
-  });
-  const {count,time} = planTotals();
-  byId('sum-count').textContent = `${count} תרגילים`;
-  byId('sum-time').textContent = `${time} דק׳ סה"כ`;
-
-  // עדכון כותרת הדפסה
-  const t = byId('plan-title').value.trim() || 'מערך אימון';
-  const date = byId('plan-date').value; const group = byId('plan-group').value.trim();
-  byId('plan-title-print').textContent = t;
-  const meta = [date? new Date(date).toLocaleDateString('he-IL') : '', group].filter(Boolean).join(' · ');
-  byId('plan-meta-print').textContent = meta;
-}
-
-// ===== אירועים =====
-byId('f-cat').oninput = e=>{state.filters.cat=e.target.value; applyFilters()};
-byId('f-age').oninput = e=>{state.filters.age=e.target.value; applyFilters()};
-byId('f-dur').oninput = e=>{state.filters.dur=e.target.value; applyFilters()};
-byId('f-q').oninput = e=>{state.filters.q=e.target.value; applyFilters()};
-
-byId('btn-print').onclick = ()=> window.print();
-byId('btn-save').onclick = ()=> { savePlan(); toast('המערך נשמר בדפדפן ✔'); };
-byId('btn-reset-plan').onclick = ()=> { if(confirm('לנקות את המערך?')){ state.plan=[]; renderPlan(); savePlan(); }};
-byId('btn-clear').onclick = ()=> { if(confirm('לאפס הכל (מאגר + מערך)?')){ localStorage.clear(); load(); initFilters(); applyFilters(); renderPlan(); }};
-byId('btn-export').onclick = ()=> {
-  const blob = new Blob([JSON.stringify(state.bank,null,2)], {type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='basketbank.json'; a.click();
-};
-byId('btn-import').onclick = ()=>{
-  const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json';
-  inp.onchange = async ()=>{
-    const f = inp.files[0]; if(!f) return;
-    const text = await f.text();
-    try{ const data = JSON.parse(text); if(!Array.isArray(data)) throw 0; state.bank=data; save(); initFilters(); applyFilters(); toast('המאגר נטען ✔'); }
-    catch{ alert('קובץ לא תקין – צפה לפורמט JSON של מערך תרגילים'); }
-  };
-  inp.click();
-};
-
-['plan-title','plan-date','plan-group','plan-notes'].forEach(id=>{
-  byId(id).addEventListener('input', ()=>{ savePlan(); renderPlan(); });
-});
-
-// ===== טוסטים קטנים =====
-function toast(msg){
-  const t = document.createElement('div');
-  t.textContent = msg; t.style.cssText = 'position:fixed;inset-inline-start:50%;transform:translateX(-50%);bottom:18px;background:#0f1b30;border:1px solid #33415e;padding:10px 12px;border-radius:10px;z-index:9999';
-  document.body.appendChild(t); setTimeout(()=>t.remove(), 1600);
-}
-
-// ===== אתחול =====
-// --- תפריט צד נשלף במובייל ---
-const mbtn = document.getElementById('btn-filter');
-if(mbtn){
-  const backdrop = document.createElement('div');
-  backdrop.id = 'backdrop';
-  document.body.appendChild(backdrop);
-  const closeBtn = document.getElementById('btn-close-sidebar');
-  const open = ()=> document.body.classList.add('sidebar-open');
-  const close = ()=> document.body.classList.remove('sidebar-open');
-  mbtn.onclick = open;
-  backdrop.onclick = close;
-  if(closeBtn) closeBtn.onclick = close;
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
-}
-
-// --- תפריט צד נשלף במובייל ---
-const mbtn = document.getElementById('btn-filter');
-if(mbtn){
-  const backdrop = document.createElement('div');
-  backdrop.id = 'backdrop';
-  document.body.appendChild(backdrop);
-  const closeBtn = document.getElementById('btn-close-sidebar');
-  const open = ()=> document.body.classList.add('sidebar-open');
-  const close = ()=> document.body.classList.remove('sidebar-open');
-  mbtn.onclick = open;
-  backdrop.onclick = close;
-  if(closeBtn) closeBtn.onclick = close;
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
-}
-
-// --- העברה חכמה של כרטיס המאגר כדי שתמיד ייראה ---
-function placeBankCard(){
-  const app = document.querySelector('.app');
-  const left = document.querySelector('.col.left');
-  const bank = document.getElementById('bank-card');
-  const planCol = document.querySelector('.app > .col:not(.left)');
-  if(!app || !left || !bank || !planCol) return;
-  const isMobile = window.matchMedia('(max-width: 900px)').matches;
-  if(isMobile){
-    if(bank.parentElement !== app){ app.insertBefore(bank, planCol); }
-  }else{
-    if(bank.parentElement !== left){ left.appendChild(bank); }
-  }
-}
-window.addEventListener('resize', placeBankCard);
-
-// --- ניקוי סינון ---
-const clearBtn = document.getElementById('btn-clear-filters');
-if(clearBtn){
-  clearBtn.onclick = ()=>{
-    state.filters = {cat:'', age:'', dur:'', q:''};
-    byId('f-cat').value=''; byId('f-age').value=''; byId('f-dur').value=''; byId('f-q').value='';
-    applyFilters();
-  };
-}
-const restoreBtn = document.getElementById('btn-restore-seed');
-if(restoreBtn){
-  restoreBtn.onclick = ()=>{
-    if(confirm('לשחזר את מאגר ברירת המחדל? זה ידרוס מאגר שמור.')){
-      localStorage.removeItem(LS_BANK);
-      state.bank = seed.slice();
-      save(); initFilters(); applyFilters(); renderBank(state.bank);
-      toast('המאגר שוחזר ✔');
-    }
-  };
-}
-
-load(); initFilters(); applyFilters(); renderBank(state.bank); renderPlan(); placeBankCard();
-</script>
-</body>
-</html>
